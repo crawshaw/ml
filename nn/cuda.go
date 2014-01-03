@@ -48,3 +48,11 @@ func Float16ToFloat32(dst []float32, src []Float16) {
 	}
 	C.f16tof32((*C.f32)(&dst[0]), (*C.f16)(&src[0]), C.int(len(src)))
 }
+
+func Forward(up, down, param Float16Device) {
+	C.forward(up.d, C.int(up.count), down.d, C.int(down.count), param.d)
+}
+
+func Backward(up, upErr, down, downErr, param Float16Device) {
+	C.backward(up.d, upErr.d, C.int(up.count), down.d, downErr.d, C.int(down.count), param.d)
+}

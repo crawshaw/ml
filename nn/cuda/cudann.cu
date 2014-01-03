@@ -5,6 +5,14 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+__device__ float sigmoid(float x) {
+	return 1.0 / (1.0 + expf(-x));
+}
+
+__device__ float sigmoid_gradient(float x) {
+	return x * (1 - x);
+}
+
 __global__ void
 forward_d(f16* up, int num_up, f16* down, int num_down, f16* param) {
 	int upI = blockDim.x * blockIdx.x + threadIdx.x;
@@ -15,6 +23,7 @@ forward_d(f16* up, int num_up, f16* down, int num_down, f16* param) {
 		v += p * d;
 	}
 	v = (v>0) ? v : 0;
+	//v = sigmoid(v);
 	up[upI] = __float2half_rn(v);
 }
 
@@ -24,7 +33,36 @@ void forward(f16* up, int num_up, f16* down, int num_down, f16* param) {
 	forward_d<<<blocks, threads>>>(up, num_up, down, num_down, param);
 }
 
+__global__ void
+backward_d(f16* up, f16* up_err, int num_up, f16* down, f16* down_err, int num_down, f16* param) {
+	int downI = blockDim.x * blockIdx.x + threadIdx.x;
+
+	float v = 0;
+	for (int upI = 0; upI < num_up; upI++) {
+		int paramI = upI*num_up+downI;
+		float p = __half2float(param[paramI]);
+		float u = __half2float(up_err[upI]);
+		v += p * u;
+	}
+	down_err[downI] = __float2half_rn(v);
+
+	float down_orig = __half2float(down[downI]);
+	for (int upI = 0; upI < num_up; upI++) {
+		float up_orig = __half2float(up[upI]);
+		//float gradient = sigmoid_gradient(up_orig);
+		float gradient = 1;
+		float delta = __half2float(up_err[upI]) * gradient * down_orig;
+		int paramI = upI*num_up+downI;
+		float p = __half2float(param[paramI]);
+		p = (p>0) ? p : 0; // max(0, v)
+		param[paramI] = __float2half_rn(p + delta);
+	}
+}
+
 void backward(f16* up, f16* up_err, int num_up, f16* down, f16* down_err, int num_down, f16* param) {
+	int threads = 256;
+	int blocks = (num_down + threads - 1) / threads;
+	backward_d<<<blocks, threads>>>(up, up_err, num_up, down, down_err, num_down, param);
 }
 
 f16* alloc_f16_device(int count) {
