@@ -28,7 +28,7 @@ forward_d(f16* up, int num_up, f16* down, int num_down, f16* param) {
 }
 
 void forward(f16* up, int num_up, f16* down, int num_down, f16* param) {
-	int threads = 256;
+	int threads = 8;
 	int blocks = (num_up + threads - 1) / threads;
 	forward_d<<<blocks, threads>>>(up, num_up, down, num_down, param);
 }

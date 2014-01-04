@@ -1,10 +1,10 @@
-#include "cudann.h"
+#include "f16.h"
 
 #include <stdio.h>
 #include <immintrin.h>
 #include <x86intrin.h>
 
-void f32tof16(f16* dst, const f32* src, int count) {
+void ftof16(f16* dst, const float* src, int count) {
 	if (count%8 != 0) {
 		fprintf(stderr, "f32tof16 needs multiple of 8 floats\n");
 		exit(3);
@@ -16,7 +16,7 @@ void f32tof16(f16* dst, const f32* src, int count) {
 	}
 }
 
-void f16tof32(f32* dst, const f16* src, int count) {
+void f16tof(float* dst, const f16* src, int count) {
 	if (count%8 != 0) {
 		fprintf(stderr, "f32tof16 needs multiple of 8 floats\n");
 		exit(3);
