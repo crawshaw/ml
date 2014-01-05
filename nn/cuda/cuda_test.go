@@ -7,17 +7,6 @@ import (
 	"github.com/crawshaw/ml/f16"
 )
 
-/*
-func TestToFloat16(t *testing.T) {
-	src := []float32{8, 79, 0, 1, 2, 3, 4, 5}
-	f := mkf16(src)
-	dst := make([]float32, len(src))
-	f16.Decode(dst, f)
-	if !reflect.DeepEqual(src, dst) {
-		t.Errorf("src %v != dst %v", src, dst)
-	}
-}
-
 func TestDeviceCopy(t *testing.T) {
 	want := []float32{1, 3, 4, 5, 6, 7, 8, 2}
 	d := Alloc(len(want))
@@ -31,7 +20,6 @@ func TestDeviceCopy(t *testing.T) {
 		t.Errorf("got %v != want %v", got, want)
 	}
 }
-*/
 
 func mkf16(x []float32) []f16.Float16 {
 	res := make([]f16.Float16, len(x))
