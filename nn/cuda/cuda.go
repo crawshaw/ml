@@ -16,6 +16,8 @@ type Float16Device struct {
 	count int
 }
 
+func (p Float16Device) Len() int { return p.count }
+
 func (p Float16Device) ToDevice(h []f16.Float16) {
 	if len(h) != p.count {
 		panic(fmt.Sprintf("Float16Device.ToDevice: len(h)=%d, count=%d", len(h), p.count))
