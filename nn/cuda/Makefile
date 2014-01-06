@@ -1,6 +1,14 @@
-NVCC := /Developer/NVIDIA/CUDA-5.5/bin/nvcc
-CCFLAGS := -ccbin /usr/bin/clang -arch=sm_30 -Xcompiler '-fPIC'
-LDFLAGS := -L/Developer/NVIDIA/CUDA-5.5/lib -lcudart
+ifndef CUDAROOT
+	$(error CUDAROOT not set; have you run setup.sh?)
+endif
+ifndef CUDALIB
+	$(error CUDALIB not set; have you run setup.sh?)
+endif
+
+NVCC := $(CUDAROOT)/bin/nvcc
+#CCFLAGS := -ccbin /usr/bin/clang TODO: needed on darwin?
+CCFLAGS := -arch=sm_30 -Xcompiler '-fPIC'
+LDFLAGS := -L$(CUDALIB) -lcudart
 
 cudann.so: cudann.o link.o
 	g++ $(LDFLAGS) -shared -o $@ $+

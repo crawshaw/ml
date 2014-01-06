@@ -1,7 +1,7 @@
 package cuda
 
 /*
-#cgo LDFLAGS: cudann.so
+#cgo LDFLAGS: cudann.so -lcudart
 #include "cudann.h"
 */
 import "C"
