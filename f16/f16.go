@@ -9,7 +9,7 @@
 //	http://en.wikipedia.org/wiki/F16C
 package f16
 
-// #cgo CFLAGS: -mavx -mf16c
+// #cgo CFLAGS: -mavx -mf16c -std=c99
 // #include "f16.h"
 import "C"
 import "fmt"
