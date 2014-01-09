@@ -2,6 +2,7 @@ package cuda
 
 import (
 	"reflect"
+	"runtime"
 	"testing"
 
 	"github.com/crawshaw/ml/f16"
@@ -43,6 +44,12 @@ func TestSub(t *testing.T) {
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %v != want %v", got, want)
 	}
+}
+
+func TestFree(t *testing.T) {
+	// not a great test, mostly checks for any unexpected panic.
+	_ = Alloc(1<<20)
+	runtime.GC()
 }
 
 func TestForward(t *testing.T) {

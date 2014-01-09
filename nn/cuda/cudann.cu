@@ -82,10 +82,18 @@ f16* alloc_f16_device(int count) {
 	f16* f;
 	cudaError_t err = cudaMalloc((void**)&f, count*sizeof(f16));
 	if (err != cudaSuccess) {
-		fprintf(stderr, "dalloc_f16(%d): %s", count, cudaGetErrorString(err));
+		fprintf(stderr, "alloc_f16_device(%d): %s", count, cudaGetErrorString(err));
 		exit(1);
 	}
 	return f;
+}
+
+void free_f16_device(f16* d) {
+	cudaError_t err = cudaFree((void*)d);
+	if (err != cudaSuccess) {
+		fprintf(stderr, "free_f16_device(): %s", cudaGetErrorString(err));
+		exit(1);
+	}
 }
 
 void memcpy_htod(f16* d, const f16* h, int count) {
