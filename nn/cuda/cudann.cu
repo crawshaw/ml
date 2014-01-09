@@ -65,17 +65,17 @@ void backward(f16* up, f16* up_err, int num_up, f16* down, f16* down_err, int nu
 	backward_d<<<blocks, threads>>>(up, up_err, num_up, down, down_err, num_down, param);
 }
 
-__global__ void f16devsub_d(f16* dst, f16* src, int count) {
+__global__ void f16devsub_d(f16* dst, f16* a, f16* b, int count) {
 	int i = blockDim.x * blockIdx.x + threadIdx.x;
-	float d = __half2float(dst[i]);
-	float s = __half2float(src[i]);
-	dst[i] = __float2half_rn(d - s);
+	float af = __half2float(a[i]);
+	float bf = __half2float(b[i]);
+	dst[i] = __float2half_rn(af - bf);
 }
 
-void f16devsub(f16* dst, f16* src, int count) {
+void f16devsub(f16* dst, f16* a, f16* b, int count) {
 	int threads = 128;
 	int blocks = (count + threads - 1) / threads;
-	f16devsub_d<<<blocks, threads>>>(dst, src, count);
+	f16devsub_d<<<blocks, threads>>>(dst, a, b, count);
 }
 
 f16* alloc_f16_device(int count) {

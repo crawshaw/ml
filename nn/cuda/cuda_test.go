@@ -28,14 +28,15 @@ func mkf16(x []float32) []f16.Float16 {
 }
 
 func TestSub(t *testing.T) {
-	l0, l1 := Alloc(8), Alloc(8)
+	dst, l0, l1 := Alloc(8), Alloc(8), Alloc(8)
 	l0.ToDevice(mkf16([]float32{8, 7, 2, 4, 2, 4, 2, 1}))
 	l1.ToDevice(mkf16([]float32{6, 1, 4, 4, 0, 1, 2, 8}))
+	dst.ToDevice(mkf16([]float32{0, 0, 0, 0, 0, 0, 0, 0}))
 	want := []float32{2, 6, -2, 0, 2, 3, 0, -7}
-	l0.Sub(l1)
+	Sub(dst, l0, l1)
 
 	res := make([]f16.Float16, len(want))
-	l0.ToHost(res)
+	dst.ToHost(res)
 	got := make([]float32, len(want))
 	f16.Decode(got, res)
 

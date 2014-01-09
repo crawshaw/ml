@@ -32,12 +32,12 @@ func (p Float16Device) ToHost(h []f16.Float16) {
 	C.memcpy_dtoh((*C.f16)(&h[0]), p.d, C.int(p.count))
 }
 
-// Sub subtracts val from p.
-func (p Float16Device) Sub(val Float16Device) {
-	if val.count != p.count {
-		panic(fmt.Sprintf("Float16Device.Sub: val.Len=%d, p.Len=%d", val.count, p.count))
+// Sub subtracts b from a and writes to dst, i.e. dst = a - b.
+func Sub(dst, a, b Float16Device) {
+	if dst.count != a.count || dst.count != b.count {
+		panic(fmt.Sprintf("cuda.Sub: dst.Len=%d, a.Len=%d, b.Len=%d", dst.count, a.count, b.count))
 	}
-	C.f16devsub(p.d, val.d, C.int(p.count))
+	C.f16devsub(dst.d, a.d, b.d, C.int(dst.count))
 }
 
 // TODO: may be easier to read:
