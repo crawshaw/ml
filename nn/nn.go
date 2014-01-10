@@ -10,10 +10,16 @@ import (
 )
 
 type Layer struct {
-	node      cuda.Float16Device
-	err       cuda.Float16Device
-	param     cuda.Float16Device
-	paramHost []f16.Float16
+	node  cuda.Float16Device
+	err   cuda.Float16Device
+	param cuda.Float16Device
+
+	host layerHost
+}
+
+type layerHost struct {
+	param []f16.Float16
+	delta []f16.Float16
 }
 
 func NewLayer(size int) Layer {
@@ -37,7 +43,8 @@ type f16label struct {
 	buf []f16.Float16 // max(in.Len(), out.Len()) for host encoding
 }
 
-const batchSize = 64
+// TODO: tune
+const batchSize = 256
 
 func (n *Network) init() {
 	if n.batch != nil {
@@ -62,7 +69,8 @@ func (n *Network) init() {
 		nsize := n.Layer[i].node.Len()
 		psize := nsize * n.Layer[i+1].node.Len()
 		n.Layer[i].param = cuda.Alloc(psize)
-		n.Layer[i].paramHost = make([]f16.Float16, psize)
+		n.Layer[i].host.param = make([]f16.Float16, psize)
+		n.Layer[i].host.delta = make([]f16.Float16, psize)
 	}
 }
 
@@ -76,8 +84,13 @@ func (n *Network) forward() {
 }
 
 func (n *Network) backward() {
-	for i := len(n.Layer)-1; i > 0; i++ {
-		// TODO
+	for i := len(n.Layer) - 1; i > 0; i++ {
+		up := n.Layer[i+1].node
+		upErr := n.Layer[i+1].err
+		down := n.Layer[i].node
+		downErr := n.Layer[i].err
+		param := n.Layer[i].param
+		cuda.Backward(up, upErr, down, downErr, param)
 	}
 }
 
@@ -103,7 +116,8 @@ func (n *Network) Train(batch []LabelledData) {
 	}
 	wg.Wait()
 
-	for _, d := range batch {
+	// Run the batch.
+	for _, d := range n.batch {
 		// Swap in initial values.
 		old := n.Layer[0].node
 		n.Layer[0].node = d.in
@@ -113,10 +127,12 @@ func (n *Network) Train(batch []LabelledData) {
 
 		// Calculate error in last layer.
 		outLayer := n.Layer[len(n.Layer)-1]
-		cuda.Sub(out.err, out.node, d.out)
+		cuda.Sub(outLayer.err, outLayer.node, d.out)
 
 		n.backward()
 	}
+
+	// TODO copy the parameters back out to the host.
 }
 
 type LabelledData struct {
