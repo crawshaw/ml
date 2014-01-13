@@ -132,7 +132,16 @@ func (n *Network) Train(batch []LabelledData) {
 		n.backward()
 	}
 
-	// TODO copy the parameters back out to the host.
+	// Copy the parameters back out to the host.
+	for i := 0; i < len(n.Layer)-1; i++ {
+		go func(i int) {
+			l := &n.Layer[i]
+			// TODO: block until existing deltas have been synced with server.
+			l.host.delta, l.host.param = l.host.param, l.host.delta
+			l.param.ToHost(l.host.param)
+			f16.Sub(l.host.delta, l.host.param)
+		}(i)
+	}
 }
 
 type LabelledData struct {
